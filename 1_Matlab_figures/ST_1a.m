@@ -60,7 +60,7 @@ figure, imagesc(c)
 
 
 
-%% to resize plots it is sometimes useful to chaneg teh units from normalized to absolute
+%% to resize plots it is sometimes useful to change the units from normalized to absolute
 set(gca,'Units','centimeters');
 set(gca,'Units','normalized');
 
