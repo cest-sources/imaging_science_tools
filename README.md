@@ -4,8 +4,10 @@ Tools for doing imaging science and slides that explain it.
 Full videos on youtube:
 
 ST1 - Matlab Figures: https://www.youtube.com/watch?v=ur0cTY8sQ0M
-ST2 - Quick intro to git, gitlab, github
-ST3 - Image registration
+
+ST2 - Quick intro to git, gitlab, github: WIP
+
+ST3 - Image registration: WIP
 
 
 
