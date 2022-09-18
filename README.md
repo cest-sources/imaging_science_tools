@@ -5,9 +5,25 @@ Full videos on youtube:
 
 ST1 - Matlab Figures: https://www.youtube.com/watch?v=ur0cTY8sQ0M
 
-ST2 - Quick intro to git, gitlab, github: WIP
+ST2 - Quick intro to git, tortoisegit, gitlab, github: WIP
+	- install git and tortoise git
+	- get access to private repos
+	- clone public or private repos, branches
+	- local changes, diff, commit, revert
+	- push to server, merge/pull request
 
-ST3 - Image registration: WIP
+ST3 - folders_data_codes
+	- speparate raw data,  code  and processed data
+	- Projects 001
+	- raw data - 2022_09_18
+	- link to raw data and copy it with code
+	- best practice: git clone, get local or web data, run code
+
+ST4 - Image visualization and registration: WIP
+	-MITK
+	-SPM
+	-FSL
+	-...
 
 
 
