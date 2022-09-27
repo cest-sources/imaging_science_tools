@@ -13,11 +13,14 @@ ST2 - Quick intro to git, tortoisegit, gitlab, github: WIP
 	- push to server, merge/pull request
 
 ST3 - folders_data_codes
-	- speparate raw data,  code  and processed data
+	- separate raw data,  code  and processed data
 	- Projects 001
 	- raw data - 2022_09_18
 	- link to raw data and copy it with code
-	- best practice: git clone, get local or web data, run code
+	- best practice: git clone, readme, get local or web data, run code
+
+ST4 - minimal project management
+	- getting things done - inbox, next step!!, two minutes rule
 
 ST4 - Image visualization and registration: WIP
 	-MITK
