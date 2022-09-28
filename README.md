@@ -5,9 +5,7 @@ Full videos on youtube:
 
 ST1 - Matlab Figures: https://www.youtube.com/watch?v=ur0cTY8sQ0M
 
-ST2 - Quick intro to git, tortoisegit, gitlab, github: WIP
-	- install git and tortoise git
-	- get access to private repos
+ST2 - Quick intro to git, tortoisegit, gitlab, github: https://youtu.be/NG0MBnbDGY8
 	- clone public or private repos, branches
 	- local changes, diff, commit, revert
 	- push to server, merge/pull request
