@@ -10,7 +10,7 @@ ST2 - Quick intro to git, tortoisegit, gitlab, github: https://youtu.be/NG0MBnbD
 	- local changes, diff, commit, revert
 	- push to server, merge/pull request
 
-ST3 - folders_data_codes
+ST3 - folders_data_codes: https://youtu.be/I48tuQhZ34A 
 	- separate raw data,  code  and processed data
 	- Projects 001
 	- raw data - 2022_09_18
