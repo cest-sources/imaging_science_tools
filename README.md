@@ -17,6 +17,8 @@ ST3 - folders_data_codes: https://youtu.be/I48tuQhZ34A
 	- link to raw data and copy it with code
 	- best practice: git clone, readme, get local or web data, run code
 
+TODO:
+
 ST4 - minimal project management
 	- getting things done - inbox, next step!!, two minutes rule
 
