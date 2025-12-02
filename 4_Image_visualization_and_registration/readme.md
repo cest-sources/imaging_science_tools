@@ -1,21 +1,7 @@
-# Image formats
-- dcm
-- nii
-- ?
+# 4. Image visualization and registration
 
-
-# Viewers
-- MITK (standalone)
-- 3Dslicer (standalone)
-- SPM (Matlab)
-- SeeViewer (Matlab)
-- Napari (python)
-- sitk (python)
-- ...
-
-# Registration
-- dipy Simple python tutorial for coreg of niftis in python (nibabel nilearn dipy) https://colab.research.google.com/drive/1PF0Jd_wSWNVm2s8z5u64bIlDkZa88X6L?usp=sharing
-- sitk
-- ants
-- spm
+Here, you find tools and tutorials to:
+- [Convert dcm to nii](https://github.com/magdamd/imaging_science_tools/tree/patch-1/4_Image_visualization_and_registration/1%20-%20dcm2nii)
+- [View images](https://github.com/magdamd/imaging_science_tools/tree/patch-1/4_Image_visualization_and_registration/2%20-%20viewers)
+- [Register images](https://github.com/magdamd/imaging_science_tools/tree/patch-1/4_Image_visualization_and_registration/3%20-%20registration)
 
