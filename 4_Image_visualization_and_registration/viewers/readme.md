@@ -3,6 +3,6 @@
 - 3Dslicer (standalone)
 - SPM (Matlab)
 - SeeViewer (Matlab)
-- Napari (python)
+- Napari (python): [https://napari.org/stable/](https://napari.org/stable/)
 - sitk (python)
 - ...
