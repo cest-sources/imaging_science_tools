@@ -4,7 +4,7 @@ This is the next tutorial after the tool list in [4. Image visualization and reg
 
 The worked example is [`nifti_geometry_and_resampling.ipynb`](nifti_geometry_and_resampling.ipynb). It loads [`MR_Gd.nii.gz`](https://github.com/niivue/niivue-demo-images/blob/main/MR_Gd.nii.gz), reslices it onto a tilted slab with the same in-plane field of view (3 slices, 2.5 × 2.5 × 7.5 mm), then resamples that slab back onto the high-resolution grid. A footprint average over each thick voxel is compared with nibabel, which samples the voxel center.
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/cursor/nifti-geometry-resampling-7d5a/5_nifti_geometry_and_resampling/nifti_geometry_and_resampling.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/main/5_nifti_geometry_and_resampling/nifti_geometry_and_resampling.ipynb)
 
 [Open in Colab](https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/main/5_nifti_geometry_and_resampling/nifti_geometry_and_resampling.ipynb). The notebook installs with `!pip`. matplotlib draws voxel-index slices. [NiiVue](https://github.com/niivue/niivue), through `ipyniivue`, draws the files in 3D: scroll a slice, drag the 3D panel. Each viewer has a radiologic/neurologic button and a world-millimetre/voxel button. When two images are loaded, a checkbox turns each one on or off. Slice edges are labeled R, L, A, P, S, and I (S is head, I is foot). A small synthetic copy of the resampling math is [`resample_examples.py`](resample_examples.py).
 
