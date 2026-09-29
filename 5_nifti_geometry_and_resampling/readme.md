@@ -2,15 +2,13 @@
 
 This is the next tutorial after the tool list in [4. Image visualization and registration](../4_Image_visualization_and_registration/readme.md). Those pages name the programs (dcm2niix, napari, ANTs). This one walks the short path those programs share: get a NIfTI, see how its geometry is stored, and resample it onto another grid.
 
-The examples use a synthetic ball, so they run without a DICOM download. The same functions work on a real file.
+The worked example is [`nifti_geometry_and_resampling.ipynb`](nifti_geometry_and_resampling.ipynb). It loads [`MR_Gd.nii.gz`](https://github.com/niivue/niivue-demo-images/blob/main/MR_Gd.nii.gz), reslices it onto a tilted slab (9 cm across, 3 slices, 1.7 × 1.7 × 3 mm), then resamples that slab back onto the high-resolution grid.
 
-Pictures are in [`nifti_geometry_and_resampling.ipynb`](nifti_geometry_and_resampling.ipynb). matplotlib draws voxel-index slices. [NiiVue](https://github.com/niivue/niivue), through `ipyniivue`, draws the same files in world millimetres inside the notebook: scroll a slice, drag the 3D panel. It reads the affine, so the tilted volume sits on the axial one. A script-only copy of the resampling is [`resample_examples.py`](resample_examples.py).
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/cursor/nifti-geometry-resampling-7d5a/5_nifti_geometry_and_resampling/nifti_geometry_and_resampling.ipynb)
 
-```
-pip install numpy scipy nibabel matplotlib ipyniivue
-```
+[Open in Colab](https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/cursor/nifti-geometry-resampling-7d5a/5_nifti_geometry_and_resampling/nifti_geometry_and_resampling.ipynb). The notebook installs with `!pip`. matplotlib draws voxel-index slices. [NiiVue](https://github.com/niivue/niivue), through `ipyniivue`, draws the files in world millimetres: scroll a slice, drag the 3D panel. A small synthetic copy of the resampling math is [`resample_examples.py`](resample_examples.py).
 
-The notebook needs a Jupyter frontend (JupyterLab, VS Code, or Cursor). The NiiVue panels stay blank on GitHub until you run the cells.
+The NiiVue panels stay blank on GitHub until you run the cells. JupyterLab, VS Code, Cursor, and Colab can all run the notebook.
 
 The same `output/*.nii.gz` files open without a kernel in the NiiVue editor extension, `KorbinianEckstein.niivue` (search “niivue” in VS Code or Cursor). Click a file, or select `source.nii.gz` and `tilted.nii.gz` and run **NiiVue: Compare**. That is the same viewer as the notebook widget. A plain Python REPL has no canvas for it.
 
@@ -20,8 +18,7 @@ The same `output/*.nii.gz` files open without a kernel in the NiiVue editor exte
 2. **View the NIfTI.** The array on screen is voxel indices. Millimetres come from the affine.
 3. **Data array and voxel-to-world matrix.** Intensities live in the array. Position, voxel size, and tilt live in a 4×4 affine.
 4. **One resample function.** For each voxel of the grid you want: index → millimetres → index in the image you have, then interpolate.
-5. **3D onto a tilted 3D, and back.** Same anatomy, different voxel size, rotated grid. Swap the two grids to come back.
-6. **3D onto a 2D plane, and that plane back into 3D.** A slice is a grid with one voxel along its normal. Putting it back fills only that slab.
+5. **3D onto a tilted slab, and back.** `MR_Gd` onto 3 slices of 1.7 × 1.7 × 3 mm, 9 cm across, tilted 25°. Then that slab back onto the high-resolution grid.
 
 Left out on purpose: searching for an unknown alignment (that is [registration](../4_Image_visualization_and_registration/3%20-%20registration/readme.md)), and 4D series.
 
@@ -241,23 +238,22 @@ slab = place_slice_in_volume(slice_2d, plane_affine, source_shape, source_affine
 
 ## Run it
 
+Open the notebook in Colab, or locally:
+
 ```
-python resample_examples.py
+pip install nibabel scipy matplotlib ipyniivue
+jupyter lab nifti_geometry_and_resampling.ipynb
 ```
 
-The script writes NIfTIs under `output/` (that folder is local, not part of the repo):
+The notebook downloads `MR_Gd.nii.gz` and writes under `output/` (local, not part of the repo):
 
 | file | what it is |
 | --- | --- |
-| `source.nii.gz` | coarse axial ball, 2 mm |
-| `tilted.nii.gz` | same ball, 1.5 mm, tilted 25° |
-| `back.nii.gz` | tilted volume sampled back onto the coarse grid |
-| `plane.nii.gz` | one tilted slice, 1 mm in plane, 4 mm thick |
-| `slice_in_volume.nii.gz` | that slice painted into the coarse grid |
+| `MR_Gd_tilt_lowres.nii.gz` | 9 cm slab, 3 slices, 1.7 × 1.7 × 3 mm, tilted 25° |
+| `MR_Gd_lowres_on_highres.nii.gz` | that slab sampled back onto the `MR_Gd` grid |
 
-Open `source.nii.gz` and `tilted.nii.gz` in napari or MITK. The ball occupies the same place in the world. The voxel grids that sample it differ.
+`python resample_examples.py` still runs the small synthetic ball, without the viewer.
 
 ## Still to add
 
-- A real DICOM series in place of the ball. Keep the affine already stored in the NIfTI.
 - Labels resampled with `order=0`.

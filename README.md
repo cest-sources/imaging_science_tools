@@ -31,9 +31,9 @@ ST4 - Image visualization and registration: WIP
 ST5 - NIfTI geometry and resampling
 	- dcm to nifti, then view the data array
 	- voxel-to-world matrix (the affine) vs the intensity array
-	- resample a 3D volume onto a tilted 3D grid with another resolution, and back
-	- resample 3D onto a 2D plane, and place that plane into a 3D grid
+	- resample MR_Gd onto a tilted 3-slice slab (1.7 x 1.7 x 3 mm), and back
 	- folder: 5_nifti_geometry_and_resampling
+	- colab: https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/cursor/nifti-geometry-resampling-7d5a/5_nifti_geometry_and_resampling/nifti_geometry_and_resampling.ipynb
 
 
 
