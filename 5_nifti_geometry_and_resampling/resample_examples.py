@@ -1,5 +1,7 @@
 """Small NIfTI resampling examples for the geometry tutorial.
 
+The notebook nifti_geometry_and_resampling.ipynb draws these volumes in NiiVue.
+
 Builds a synthetic ball, then:
 
 - resamples a coarse axial 3D grid onto a finer tilted 3D grid, and back

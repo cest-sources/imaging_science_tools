@@ -2,13 +2,17 @@
 
 This is the next tutorial after the tool list in [4. Image visualization and registration](../4_Image_visualization_and_registration/readme.md). Those pages name the programs (dcm2niix, napari, ANTs). This one walks the short path those programs share: get a NIfTI, see how its geometry is stored, and resample it onto another grid.
 
-The examples use a synthetic ball, so they run without a DICOM download. The same functions work on a real file. A runnable copy is [`resample_examples.py`](resample_examples.py).
+The examples use a synthetic ball, so they run without a DICOM download. The same functions work on a real file.
+
+Pictures are in [`nifti_geometry_and_resampling.ipynb`](nifti_geometry_and_resampling.ipynb). matplotlib draws voxel-index slices. [NiiVue](https://github.com/niivue/niivue), through `ipyniivue`, draws the same files in world millimetres inside the notebook: scroll a slice, drag the 3D panel. It reads the affine, so the tilted volume sits on the axial one. A script-only copy of the resampling is [`resample_examples.py`](resample_examples.py).
 
 ```
-pip install numpy scipy nibabel
+pip install numpy scipy nibabel matplotlib ipyniivue
 ```
 
-Pictures need `matplotlib` as well. Napari is optional.
+The notebook needs a Jupyter frontend (JupyterLab, VS Code, or Cursor). The NiiVue panels stay blank on GitHub until you run the cells.
+
+The same `output/*.nii.gz` files open without a kernel in the NiiVue editor extension, `KorbinianEckstein.niivue` (search “niivue” in VS Code or Cursor). Click a file, or select `source.nii.gz` and `tilted.nii.gz` and run **NiiVue: Compare**. That is the same viewer as the notebook widget. A plain Python REPL has no canvas for it.
 
 ## Plan
 
@@ -44,6 +48,10 @@ SimpleITK stores origin, spacing, and direction. Written as NIfTI, that geometry
 
 ## 2. Viewing
 
+The notebook in this folder shows each step twice: index slices with matplotlib, then the NIfTI in NiiVue. The index slices of the tilted volume look rotated and a different size. In NiiVue the bright cap of the ball points the same way as the axial volume, because both are placed with their affines.
+
+For a quick look with no notebook, run `python resample_examples.py` and open `output/` with the NiiVue extension.
+
 ```python
 import nibabel as nib
 import matplotlib.pyplot as plt
@@ -62,7 +70,7 @@ for ax in axes:
 plt.show()
 ```
 
-`data[i, j, k]` selects a voxel by index. Millimetres come from the affine, applied to that index. A slice through the middle index follows one voxel axis; whether that axis is axial in the scanner is what the affine says. Napari and the other programs in the [viewers list](../4_Image_visualization_and_registration/2%20-%20viewers/readme.md) draw this array. Give the viewer the affine too, so the tilt is kept.
+`data[i, j, k]` selects a voxel by index. Millimetres come from the affine, applied to that index. A slice through the middle index follows one voxel axis; whether that axis is axial in the scanner is what the affine says. NiiVue applies the affine itself. Napari, in the [viewers list](../4_Image_visualization_and_registration/2%20-%20viewers/readme.md), draws the array; pass the geometry as well when you use it for a tilted grid.
 
 ## 3. Data array and voxel-to-world matrix
 
@@ -253,4 +261,3 @@ Open `source.nii.gz` and `tilted.nii.gz` in napari or MITK. The ball occupies th
 
 - A real DICOM series in place of the ball. Keep the affine already stored in the NIfTI.
 - Labels resampled with `order=0`.
-- A napari view that shows the axial grid and the tilted grid together.
