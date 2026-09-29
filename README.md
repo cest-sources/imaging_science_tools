@@ -31,7 +31,7 @@ ST4 - Image visualization and registration: WIP
 ST5 - NIfTI geometry and resampling
 	- dcm to nifti, then view the data array
 	- voxel-to-world matrix (the affine) vs the intensity array
-	- resample MR_Gd onto a tilted 3-slice slab (1.7 x 1.7 x 3 mm), and back
+	- resample MR_Gd onto a tilted 3-slice slab (2.5 x 2.5 x 7.5 mm, full in-plane field of view), and back
 	- folder: 5_nifti_geometry_and_resampling
 	- colab: https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/cursor/nifti-geometry-resampling-7d5a/5_nifti_geometry_and_resampling/nifti_geometry_and_resampling.ipynb
 
