@@ -250,7 +250,10 @@ The notebook downloads `MR_Gd.nii.gz` and writes under `output/` (local, not par
 | file | what it is |
 | --- | --- |
 | `MR_Gd_tilt_lowres.nii.gz` | 9 cm slab, 3 slices, 1.7 × 1.7 × 3 mm, tilted 25° |
+| `MR_Gd_highres_on_lowres.nii.gz` | `MR_Gd` sampled onto that slab again, so the slices match |
 | `MR_Gd_lowres_on_highres.nii.gz` | that slab sampled back onto the `MR_Gd` grid |
+| `MR_Gd_slab_0.5mm.nii.gz` | `MR_Gd` on a 0.5 mm grid in the slab orientation and field of view |
+| `MR_Gd_tilt_lowres_0.5mm.nii.gz` | the slab on that same 0.5 mm grid |
 
 `python resample_examples.py` still runs the small synthetic ball, without the viewer.
 
