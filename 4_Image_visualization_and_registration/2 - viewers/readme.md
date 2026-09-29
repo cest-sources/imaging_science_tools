@@ -5,5 +5,8 @@
 - SeeViewer (Matlab)
 - Napari (python): [https://napari.org/stable/](https://napari.org/stable/)
 - sitk (python)
-- nii-vue (as vscode extension, or also standalone)
+- NiiVue (WebGL, reads the NIfTI affine)
+  - notebook widget: `pip install ipyniivue`, used in [5_nifti_geometry_and_resampling](https://github.com/cest-sources/imaging_science_tools/tree/main/5_nifti_geometry_and_resampling)
+  - VS Code / Cursor extension: search “niivue” (`KorbinianEckstein.niivue`). Open a `.nii.gz`, or select several and run NiiVue: Compare
+  - standalone: https://niivue.github.io/niivue-vscode/
 - ...
