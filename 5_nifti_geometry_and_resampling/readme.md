@@ -6,7 +6,7 @@ The worked example is [`nifti_geometry_and_resampling.ipynb`](nifti_geometry_and
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/cursor/nifti-geometry-resampling-7d5a/5_nifti_geometry_and_resampling/nifti_geometry_and_resampling.ipynb)
 
-[Open in Colab](https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/cursor/nifti-geometry-resampling-7d5a/5_nifti_geometry_and_resampling/nifti_geometry_and_resampling.ipynb). The notebook installs with `!pip`. matplotlib draws voxel-index slices. [NiiVue](https://github.com/niivue/niivue), through `ipyniivue`, draws the files in world millimetres: scroll a slice, drag the 3D panel. A small synthetic copy of the resampling math is [`resample_examples.py`](resample_examples.py).
+[Open in Colab](https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/cursor/nifti-geometry-resampling-7d5a/5_nifti_geometry_and_resampling/nifti_geometry_and_resampling.ipynb). The notebook installs with `!pip`. matplotlib draws voxel-index slices. [NiiVue](https://github.com/niivue/niivue), through `ipyniivue`, draws the files in 3D: scroll a slice, drag the 3D panel. Each viewer has a radiologic/neurologic button and a world-millimetre/voxel button. Slice edges are labeled R, L, A, P, S, and I (S is head, I is foot). A small synthetic copy of the resampling math is [`resample_examples.py`](resample_examples.py).
 
 The NiiVue panels stay blank on GitHub until you run the cells. JupyterLab, VS Code, Cursor, and Colab can all run the notebook.
 
