@@ -28,6 +28,13 @@ ST4 - Image visualization and registration: WIP
 	-FSL
 	-...
 
+ST5 - NIfTI geometry and resampling
+	- dcm to nifti, then view the data array
+	- voxel-to-world matrix (the affine) vs the intensity array
+	- resample a 3D volume onto a tilted 3D grid with another resolution, and back
+	- resample 3D onto a 2D plane, and place that plane into a 3D grid
+	- folder: 5_nifti_geometry_and_resampling
+
 
 
 
