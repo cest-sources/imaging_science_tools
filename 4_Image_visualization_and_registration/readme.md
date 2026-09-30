@@ -1,8 +1,11 @@
-# 4. Image visualization and registration
+# NIfTI, resampling, and registration
 
-Here, you find tools and tutorials to:
-- [Convert dcm to nii](https://github.com/cest-sources/imaging_science_tools/tree/main/4_Image_visualization_and_registration/1%20-%20dcm2nii)
-- [View images](https://github.com/cest-sources/imaging_science_tools/tree/main/4_Image_visualization_and_registration/2%20-%20viewers)
-- [Register images](https://github.com/cest-sources/imaging_science_tools/tree/main/4_Image_visualization_and_registration/3%20-%20registration)
-- [NIfTI geometry and resampling](https://github.com/cest-sources/imaging_science_tools/tree/main/5_nifti_geometry_and_resampling) — voxel-to-world matrix, 3D↔tilted 3D, 2D↔3D
+DICOM series are converted to NIfTI. A NIfTI keeps a data array (intensities at voxel indices) and a voxel-to-world matrix (a 4×4 affine, index to millimetres). The notebook reslices a volume onto a tilted slab, compares a footprint average with nibabel, and registers a phantom with a known affine, with ANTs, and with DIPY.
 
+The worked example is [`nifti_and_registration.ipynb`](nifti_and_registration.ipynb). Display is NiiVue. The phantom used for registration is [`phantom_for_tutorials/dice_test_phantom.nii.gz`](phantom_for_tutorials/dice_test_phantom.nii.gz).
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/cursor/merge-nifti-registration-7d5a/4_Image_visualization_and_registration/nifti_and_registration.ipynb)
+
+[Open in Colab](https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/cursor/merge-nifti-registration-7d5a/4_Image_visualization_and_registration/nifti_and_registration.ipynb). The first cell installs the packages with `!pip`.
+
+NiiVue panels stay blank on GitHub until you run the cells. The same buttons are on every viewer: radiologic or neurologic, world millimetres or voxel indices, and, when two images are loaded, a checkbox for each file. Slice edges are labeled R, L, A, P, S, and I (S is head, I is foot).
