@@ -25,7 +25,7 @@ ST4 - minimal project management
 ST4 - NIfTI, resampling, and registration
 	- DICOM series to one NIfTI: data array plus voxel-to-world matrix
 	- resample MR_Gd onto a tilted 3-slice slab (2.5 x 2.5 x 7.5 mm, full in-plane field of view), and back
-	- footprint average versus nibabel; ANTs and DIPY rigid registration on the tutorial phantom
+	- footprint average versus nibabel; register the high-resolution scan onto the low-resolution slab with ANTs and DIPY
 	- folder: 4_Image_visualization_and_registration
 	- colab: https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/cursor/merge-nifti-registration-7d5a/4_Image_visualization_and_registration/nifti_and_registration.ipynb
 

@@ -1,8 +1,8 @@
 # NIfTI, resampling, and registration
 
-DICOM series are converted to NIfTI. A NIfTI keeps a data array (intensities at voxel indices) and a voxel-to-world matrix (a 4×4 affine, index to millimetres). The notebook reslices a volume onto a tilted slab, compares a footprint average with nibabel, and registers a phantom with a known affine, with ANTs, and with DIPY.
+DICOM series are converted to NIfTI. A NIfTI keeps a data array (intensities at voxel indices) and a voxel-to-world matrix (a 4×4 affine, index to millimetres). The notebook reslices `MR_Gd` onto a tilted slab, compares a footprint average with nibabel, and registers that high-resolution scan onto the slab with a known affine, with ANTs, and with DIPY.
 
-The worked example is [`nifti_and_registration.ipynb`](nifti_and_registration.ipynb). Display is NiiVue. The phantom used for registration is [`phantom_for_tutorials/dice_test_phantom.nii.gz`](phantom_for_tutorials/dice_test_phantom.nii.gz).
+The worked example is [`nifti_and_registration.ipynb`](nifti_and_registration.ipynb). Display is NiiVue.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/cursor/merge-nifti-registration-7d5a/4_Image_visualization_and_registration/nifti_and_registration.ipynb)
 
