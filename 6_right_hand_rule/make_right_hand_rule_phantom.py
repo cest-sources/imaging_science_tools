@@ -237,37 +237,36 @@ def _blend(distance, length):
     return t * t * (3.0 - 2.0 * t)
 
 
-def _remove_z_bow(rel, along):
-    """Drop a digit's longitudinal bend along `along`, keeping its thickness.
+def _remove_bow(rel, along, axis):
+    """Drop a digit's longitudinal bend along `along` for one axis.
 
-    The template is not perfectly flat. Removing that curve keeps the index
-    and the thumb in the plane of the palm instead of tilted off the back.
+    Thickness stays. The template is not perfectly flat; taking the curve out
+    keeps a straight digit in the plane it is supposed to occupy.
     """
     span = max(float(along.max() - along.min()), 1.0)
     nb = 48
     bins = np.clip(((along - along.min()) / span * (nb - 1)).astype(np.int32), 0, nb - 1)
-    sum_z = np.zeros(nb, np.float64)
+    summed = np.zeros(nb, np.float64)
     cnt = np.zeros(nb, np.float64)
-    np.add.at(sum_z, bins, rel[:, 2])
+    np.add.at(summed, bins, rel[:, axis])
     np.add.at(cnt, bins, 1.0)
     known = cnt > 0
     idx = np.arange(nb)
-    mean_z = np.interp(idx, idx[known], sum_z[known] / cnt[known])
-    mean_z = ndimage.gaussian_filter1d(mean_z, 1.5)
+    mean = np.interp(idx, idx[known], summed[known] / cnt[known])
+    mean = ndimage.gaussian_filter1d(mean, 1.5)
     out = rel.copy()
-    out[:, 2] = rel[:, 2] - mean_z[bins]
+    out[:, axis] = rel[:, axis] - mean[bins]
     return out
 
 
 def _sweep_toward_palm(rel, theta_at):
     """Lay a digit onto a smooth arc in the YZ plane.
 
-    `theta_at(y)` is the tangent angle in radians. Zero keeps the digit along
-    +Y; a positive angle turns it toward +Z, the palm. Each cross-section
-    follows the arc, so the finger stays one piece instead of fanning open
-    around the knuckle.
+    `theta_at(y)` is the flexion angle in radians. Zero keeps the digit along
+    +Y; a positive angle turns it toward +Z, the front of the hand. Each
+    cross-section follows the arc, so the finger stays one piece.
     """
-    flat = _remove_z_bow(rel, rel[:, 1])
+    flat = _remove_bow(rel, rel[:, 1], 2)
     y = flat[:, 1]
     y_min = float(y.min())
     y_max = float(y.max())
@@ -287,6 +286,22 @@ def _sweep_toward_palm(rel, theta_at):
     out[:, 0] = flat[:, 0]
     out[:, 1] = cy_p - oz * np.sin(theta_p)
     out[:, 2] = cz_p + oz * np.cos(theta_p)
+    return out
+
+
+def _aim_toward_center(rel, degrees, blend_length):
+    """Yaw a straight digit about Z. Negative degrees carry the tip toward +X.
+
+    +X is radial, toward the middle of the palm from the little finger.
+    The angle grows away from the knuckle, so the base stays put.
+    """
+    along = rel[:, 1]
+    ang = np.deg2rad(degrees) * _blend(along - along.min(), blend_length)
+    c = np.cos(ang)
+    s = np.sin(ang)
+    out = rel.copy()
+    out[:, 0] = rel[:, 0] * c - rel[:, 1] * s
+    out[:, 1] = rel[:, 0] * s + rel[:, 1] * c
     return out
 
 
@@ -320,7 +335,7 @@ def _pose_digits(local, codes):
     # Tilt from +Y toward +X. A positive rotation about Z swings +X toward +Y.
     phi = np.arctan2(direction[0], direction[1])
     rel = pts - base
-    rel = _remove_z_bow(rel, rel @ direction)
+    rel = _remove_bow(rel, rel @ direction, 2)
     distal = rel[:, 1]
     angles = phi * _blend(distal - distal.min(), 18.0)
     posed[sel] = _rotate_about_z(rel, angles) + base
@@ -334,7 +349,7 @@ def _pose_digits(local, codes):
     direction = _normalize(direction)
     phi = np.arctan2(direction[1], direction[0])  # angle from +X toward +Y
     rel = pts - base
-    rel = _remove_z_bow(rel, rel @ direction)
+    rel = _remove_bow(rel, rel @ direction, 2)
     along = rel @ direction
     angles = -phi * _blend(along - along.min(), 16.0)
     posed[sel] = _rotate_about_z(rel, angles) + base
@@ -346,22 +361,30 @@ def _pose_digits(local, codes):
     rel = pts - base
     posed[sel] = _sweep_toward_palm(rel, lambda d: (np.pi / 2.0) * _blend(d, 30.0)) + base
 
-    # Ring and pinky curl into the palm (front), past the middle finger,
-    # instead of hyperextending off the dorsum.
-    for code, mcp_deg, pip_deg in ((RING, 80.0, 70.0), (PINKY, 95.0, 80.0)):
-        sel, pts = part(code)
-        if pts.size == 0:
-            continue
-        base = pts[pts[:, 1] <= np.percentile(pts[:, 1], 8)].mean(axis=0)
-        rel = pts - base
-        length = max(float(np.percentile(rel[:, 1], 98)), 1.0)
-        posed[sel] = _sweep_toward_palm(
-            rel, lambda d, length=length, mcp_deg=mcp_deg, pip_deg=pip_deg: _curl_angle(
-                d, length, mcp_deg, pip_deg
-            )
-        ) + base
+    # Ring curls well past a right angle, so the tip comes back over the palm.
+    _curl_one(part, posed, RING, 108.0, 92.0, aim_deg=0.0)
+    # The little finger curls further, and is aimed in toward the middle of
+    # the palm instead of out along the ulnar edge.
+    _curl_one(part, posed, PINKY, 110.0, 98.0, aim_deg=-24.0)
 
     return posed
+
+
+def _curl_one(part, posed, code, mcp_deg, pip_deg, aim_deg):
+    sel, pts = part(code)
+    if pts.size == 0:
+        return
+    base = pts[pts[:, 1] <= np.percentile(pts[:, 1], 8)].mean(axis=0)
+    rel = pts - base
+    if aim_deg:
+        rel = _aim_toward_center(rel, aim_deg, 32.0)
+    length = max(float(np.percentile(rel[:, 1], 98)), 1.0)
+    posed[sel] = _sweep_toward_palm(
+        rel,
+        lambda d, length=length, mcp_deg=mcp_deg, pip_deg=pip_deg: _curl_angle(
+            d, length, mcp_deg, pip_deg
+        ),
+    ) + base
 
 
 def _splat(points, values, origin, shape):
@@ -456,11 +479,17 @@ def _check_pose(report):
         raise RuntimeError(f"thumb is not along +X: {thumb}")
     if not (middle[2] > 40 and abs(middle[0]) < 25 and abs(middle[1]) < 30):
         raise RuntimeError(f"middle finger is not along +Z: {middle}")
-    # Ring and pinky curl toward +Z, the palm, rather than off the dorsum.
+    # Ring and pinky curl back over the palm: the tip is proximal of the
+    # knuckle and still on the palmar side of the hand.
     for name in ("ring", "pinky"):
         curled = report[name]["direction_mm"]
-        if curled[2] < 12:
-            raise RuntimeError(f"{name} is not flexed toward the palm: {curled}")
+        if not (curled[2] > 6 and curled[1] < -12):
+            raise RuntimeError(f"{name} is not curled into the palm: {curled}")
+    # The little finger's tip moves toward +X, the middle of the palm,
+    # instead of further out along the ulnar edge.
+    pinky = report["pinky"]["direction_mm"]
+    if pinky[0] < 0:
+        raise RuntimeError(f"pinky does not aim toward the center of the palm: {pinky}")
     # thumb × index should point the same way as the middle finger.
     cross = np.cross(thumb / np.linalg.norm(thumb), index / np.linalg.norm(index))
     if np.dot(cross, middle) <= 0:
