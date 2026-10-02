@@ -187,16 +187,18 @@ def label_digits(mask):
     return out
 
 
-def _bone_is_high_j(data, mask):
-    """True when bright marrow sits toward +j, so +j is the dorsal side.
+def _palmar_is_high_j(labels):
+    """True when source +j points out of the palm.
 
-    On a T1-weighted hand the marrow is bright and the bones sit closer to
-    the dorsal skin than to the palm.
+    The four fingers lie on one face of the hand. The thick pad (thenar and
+    the rest of the palm) is the other face, and that face is the front.
+    Bright-voxel tests are not used: on this T1 template fat is as bright as
+    marrow, and that test put the dorsum on the palmar side.
     """
-    vals = data[mask]
-    thr = np.percentile(vals, 80)
-    bone = mask & (data >= thr)
-    return float(np.where(bone)[1].mean()) > float(np.where(mask)[1].mean())
+    fingers = np.isin(labels, (INDEX, MIDDLE, RING, PINKY))
+    finger_j = float(np.where(fingers)[1].mean())
+    palm_j = float(np.where(labels == PALM)[1].mean())
+    return palm_j > finger_j
 
 
 def _normalize(v):
@@ -218,18 +220,6 @@ def _tip_and_base(points, distal):
     return tip, base
 
 
-def _rotate_about_x(rel, angles):
-    c = np.cos(angles)
-    s = np.sin(angles)
-    y = rel[:, 1] * c - rel[:, 2] * s
-    z = rel[:, 1] * s + rel[:, 2] * c
-    out = np.empty_like(rel)
-    out[:, 0] = rel[:, 0]
-    out[:, 1] = y
-    out[:, 2] = z
-    return out
-
-
 def _rotate_about_z(rel, angles):
     c = np.cos(angles)
     s = np.sin(angles)
@@ -247,10 +237,71 @@ def _blend(distance, length):
     return t * t * (3.0 - 2.0 * t)
 
 
+def _remove_z_bow(rel, along):
+    """Drop a digit's longitudinal bend along `along`, keeping its thickness.
+
+    The template is not perfectly flat. Removing that curve keeps the index
+    and the thumb in the plane of the palm instead of tilted off the back.
+    """
+    span = max(float(along.max() - along.min()), 1.0)
+    nb = 48
+    bins = np.clip(((along - along.min()) / span * (nb - 1)).astype(np.int32), 0, nb - 1)
+    sum_z = np.zeros(nb, np.float64)
+    cnt = np.zeros(nb, np.float64)
+    np.add.at(sum_z, bins, rel[:, 2])
+    np.add.at(cnt, bins, 1.0)
+    known = cnt > 0
+    idx = np.arange(nb)
+    mean_z = np.interp(idx, idx[known], sum_z[known] / cnt[known])
+    mean_z = ndimage.gaussian_filter1d(mean_z, 1.5)
+    out = rel.copy()
+    out[:, 2] = rel[:, 2] - mean_z[bins]
+    return out
+
+
+def _sweep_toward_palm(rel, theta_at):
+    """Lay a digit onto a smooth arc in the YZ plane.
+
+    `theta_at(y)` is the tangent angle in radians. Zero keeps the digit along
+    +Y; a positive angle turns it toward +Z, the palm. Each cross-section
+    follows the arc, so the finger stays one piece instead of fanning open
+    around the knuckle.
+    """
+    flat = _remove_z_bow(rel, rel[:, 1])
+    y = flat[:, 1]
+    y_min = float(y.min())
+    y_max = float(y.max())
+    grid = np.linspace(y_min, y_max, 800)
+    # Proximal to the knuckle the tangent stays +Y, so the digit meets the palm.
+    theta = theta_at(np.maximum(grid, 0.0))
+    step = np.diff(grid, prepend=grid[0])
+    cy = np.cumsum(np.cos(theta) * step)
+    cz = np.cumsum(np.sin(theta) * step)
+    cy -= np.interp(0.0, grid, cy)
+    cz -= np.interp(0.0, grid, cz)
+    cy_p = np.interp(y, grid, cy)
+    cz_p = np.interp(y, grid, cz)
+    theta_p = np.interp(y, grid, theta)
+    oz = flat[:, 2]
+    out = np.empty_like(flat)
+    out[:, 0] = flat[:, 0]
+    out[:, 1] = cy_p - oz * np.sin(theta_p)
+    out[:, 2] = cz_p + oz * np.cos(theta_p)
+    return out
+
+
+def _curl_angle(distance, length, mcp_deg, pip_deg):
+    """Knuckle flexion, then a second bend so the tip comes back toward the palm."""
+    mcp = np.deg2rad(mcp_deg) * _blend(distance, 0.38 * length)
+    pip = np.deg2rad(pip_deg) * _blend(distance - 0.42 * length, 0.30 * length)
+    return mcp + pip
+
+
 def _pose_digits(local, codes):
     """Hinge each digit. `local` is Nx3 in the palm frame (mm).
 
-    +X radial (thumb side), +Y distal, +Z palmar.
+    +X radial (thumb side), +Y distal, +Z palmar (front of the hand).
+    Flexion is toward +Z. The index and the thumb stay in the XY plane.
     """
     posed = local.copy()
 
@@ -258,7 +309,8 @@ def _pose_digits(local, codes):
         sel = codes == code
         return sel, posed[sel]
 
-    # Index: swing it in the plane until it points along +Y.
+    # Index: swing it in the plane until it points along +Y, and take out the
+    # dorsal bow so the finger lies on the front of the hand.
     sel, pts = part(INDEX)
     base = pts[pts[:, 1] <= np.percentile(pts[:, 1], 8)].mean(axis=0)
     tip = pts[pts[:, 1] >= np.percentile(pts[:, 1], 98)].mean(axis=0)
@@ -268,11 +320,12 @@ def _pose_digits(local, codes):
     # Tilt from +Y toward +X. A positive rotation about Z swings +X toward +Y.
     phi = np.arctan2(direction[0], direction[1])
     rel = pts - base
+    rel = _remove_z_bow(rel, rel @ direction)
     distal = rel[:, 1]
     angles = phi * _blend(distal - distal.min(), 18.0)
     posed[sel] = _rotate_about_z(rel, angles) + base
 
-    # Thumb: swing it in the plane until it points along +X.
+    # Thumb: same treatment, then swing it in the plane until it points along +X.
     sel, pts = part(THUMB)
     base = pts[pts[:, 0] <= np.percentile(pts[:, 0], 12)].mean(axis=0)
     tip = pts[np.linalg.norm(pts - base, axis=1).argmax()]
@@ -281,48 +334,34 @@ def _pose_digits(local, codes):
     direction = _normalize(direction)
     phi = np.arctan2(direction[1], direction[0])  # angle from +X toward +Y
     rel = pts - base
-    # Distance from the base along the original thumb, so the whole digit swings.
+    rel = _remove_z_bow(rel, rel @ direction)
     along = rel @ direction
     angles = -phi * _blend(along - along.min(), 16.0)
     posed[sel] = _rotate_about_z(rel, angles) + base
 
-    # Middle finger: 90° flexion about the radio-ulnar axis. Distal to a short
-    # blend at the knuckle the finger is straight along +Z.
+    # Middle finger: 90° palmar flexion. Distal to the knuckle it is straight
+    # along +Z, toward the viewer when the palm faces them.
     sel, pts = part(MIDDLE)
     base = pts[pts[:, 1] <= np.percentile(pts[:, 1], 8)].mean(axis=0)
     rel = pts - base
-    angles = (np.pi / 2.0) * _blend(rel[:, 1], 22.0)
-    posed[sel] = _rotate_about_x(rel, angles) + base
+    posed[sel] = _sweep_toward_palm(rel, lambda d: (np.pi / 2.0) * _blend(d, 30.0)) + base
 
-    # Ring and pinky flex at the knuckle and again mid-finger, so the tips
-    # turn back toward the palm instead of standing up next to the middle finger.
-    for code, mcp_deg, pip_deg in ((RING, 95.0, 70.0), (PINKY, 105.0, 75.0)):
+    # Ring and pinky curl into the palm (front), past the middle finger,
+    # instead of hyperextending off the dorsum.
+    for code, mcp_deg, pip_deg in ((RING, 80.0, 70.0), (PINKY, 95.0, 80.0)):
         sel, pts = part(code)
         if pts.size == 0:
             continue
-        posed[sel] = _flex_two_hinges(pts, mcp_deg, pip_deg)
+        base = pts[pts[:, 1] <= np.percentile(pts[:, 1], 8)].mean(axis=0)
+        rel = pts - base
+        length = max(float(np.percentile(rel[:, 1], 98)), 1.0)
+        posed[sel] = _sweep_toward_palm(
+            rel, lambda d, length=length, mcp_deg=mcp_deg, pip_deg=pip_deg: _curl_angle(
+                d, length, mcp_deg, pip_deg
+            )
+        ) + base
 
     return posed
-
-
-def _flex_two_hinges(pts, mcp_deg, pip_deg):
-    """Flex a straight digit toward +Z, then bend it again so the tip curls back."""
-    base = pts[pts[:, 1] <= np.percentile(pts[:, 1], 8)].mean(axis=0)
-    rel = pts - base
-    along = rel[:, 1]
-    length = max(float(np.percentile(along, 98)), 1.0)
-    pip = 0.45 * length
-    mcp = np.deg2rad(mcp_deg) * _blend(along, 14.0)
-    rel = _rotate_about_x(rel, mcp)
-    # The mid-finger hinge after the first rotation (full angle, since pip >> 14 mm).
-    c = np.cos(np.deg2rad(mcp_deg))
-    s = np.sin(np.deg2rad(mcp_deg))
-    pip_point = np.array([0.0, pip * c, pip * s])
-    extra = np.deg2rad(pip_deg) * _blend(along - pip, 12.0)
-    distal = extra > 0
-    shifted = rel[distal] - pip_point
-    rel[distal] = _rotate_about_x(shifted, extra[distal]) + pip_point
-    return rel + base
 
 
 def _splat(points, values, origin, shape):
@@ -384,19 +423,19 @@ def _fill_knuckle_gaps(volume):
     return filled
 
 
-def _axis_report(posed, codes):
-    """Tip-minus-base vector of each posed digit, in mm."""
+def _axis_report(posed, codes, distal_score):
+    """Tip-minus-base vector of each posed digit, in mm.
+
+    `distal_score` is the along-finger coordinate from before the hinge, so a
+    curled fingertip is still the tip. The thumb is scored along +X instead.
+    """
     report = {}
     for code, name in FINGER_NAMES.items():
-        pts = posed[codes == code]
+        sel = codes == code
+        pts = posed[sel]
         if pts.size == 0:
             continue
-        if name == "thumb":
-            score = pts[:, 0]
-        elif name == "middle":
-            score = pts[:, 2]
-        else:
-            score = pts[:, 1]
+        score = pts[:, 0] if name == "thumb" else distal_score[sel]
         base = pts[score <= np.percentile(score, 8)].mean(axis=0)
         tip = pts[score >= np.percentile(score, 98)].mean(axis=0)
         report[name] = {
@@ -417,6 +456,11 @@ def _check_pose(report):
         raise RuntimeError(f"thumb is not along +X: {thumb}")
     if not (middle[2] > 40 and abs(middle[0]) < 25 and abs(middle[1]) < 30):
         raise RuntimeError(f"middle finger is not along +Z: {middle}")
+    # Ring and pinky curl toward +Z, the palm, rather than off the dorsum.
+    for name in ("ring", "pinky"):
+        curled = report[name]["direction_mm"]
+        if curled[2] < 12:
+            raise RuntimeError(f"{name} is not flexed toward the palm: {curled}")
     # thumb × index should point the same way as the middle finger.
     cross = np.cross(thumb / np.linalg.norm(thumb), index / np.linalg.norm(index))
     if np.dot(cross, middle) <= 0:
@@ -433,8 +477,8 @@ def build_phantom(nii_path, step=2, threshold=500.0):
     labels = label_digits(mask)
     labels[~mask] = 0
 
-    dorsal_is_high_j = _bone_is_high_j(data, mask)
-    palmar = np.array([0.0, -1.0 if dorsal_is_high_j else 1.0, 0.0])
+    palmar_is_high_j = _palmar_is_high_j(labels)
+    palmar = np.array([0.0, 1.0 if palmar_is_high_j else -1.0, 0.0])
 
     middle_pts = _coords(labels, MIDDLE, voxel_mm)
     index_pts = _coords(labels, INDEX, voxel_mm)
@@ -464,11 +508,11 @@ def build_phantom(nii_path, step=2, threshold=500.0):
     if mirror_z:
         local[:, 2] *= -1.0
     posed = _pose_digits(local, codes)
-    report = _axis_report(posed, codes)
+    report = _axis_report(posed, codes, local[:, 1])
     _check_pose(report)
     report["voxel_mm"] = voxel_mm
     report["mirrored_to_match_drawing"] = mirror_z
-    report["dorsal_is_high_j"] = bool(dorsal_is_high_j)
+    report["palmar_is_high_j"] = bool(palmar_is_high_j)
     report["n_voxels"] = {
         "palm": int(np.sum(codes == PALM)),
         "thumb": int(np.sum(codes == THUMB)),
