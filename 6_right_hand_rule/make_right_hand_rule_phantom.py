@@ -361,11 +361,11 @@ def _pose_digits(local, codes):
     rel = pts - base
     posed[sel] = _sweep_toward_palm(rel, lambda d: (np.pi / 2.0) * _blend(d, 30.0)) + base
 
-    # Ring curls well past a right angle, so the tip comes back over the palm.
-    _curl_one(part, posed, RING, 108.0, 92.0, aim_deg=0.0)
-    # The little finger curls further, and is aimed in toward the middle of
-    # the palm instead of out along the ulnar edge.
-    _curl_one(part, posed, PINKY, 110.0, 98.0, aim_deg=-24.0)
+    # Ring folds down onto the palm, past the curl already on main.
+    _curl_one(part, posed, RING, 112.0, 98.0, aim_deg=0.0)
+    # Little finger folds with it and yaws further toward the middle of the palm.
+    # More yaw than this runs the shaft through the ring finger.
+    _curl_one(part, posed, PINKY, 112.0, 96.0, aim_deg=-28.0)
 
     return posed
 
@@ -377,7 +377,7 @@ def _curl_one(part, posed, code, mcp_deg, pip_deg, aim_deg):
     base = pts[pts[:, 1] <= np.percentile(pts[:, 1], 8)].mean(axis=0)
     rel = pts - base
     if aim_deg:
-        rel = _aim_toward_center(rel, aim_deg, 32.0)
+        rel = _aim_toward_center(rel, aim_deg, 34.0)
     length = max(float(np.percentile(rel[:, 1], 98)), 1.0)
     posed[sel] = _sweep_toward_palm(
         rel,
@@ -483,12 +483,11 @@ def _check_pose(report):
     # knuckle and still on the palmar side of the hand.
     for name in ("ring", "pinky"):
         curled = report[name]["direction_mm"]
-        if not (curled[2] > 6 and curled[1] < -12):
+        if not (curled[2] > 5 and curled[1] < -14):
             raise RuntimeError(f"{name} is not curled into the palm: {curled}")
-    # The little finger's tip moves toward +X, the middle of the palm,
-    # instead of further out along the ulnar edge.
+    # The little finger's tip moves toward +X, the middle of the palm.
     pinky = report["pinky"]["direction_mm"]
-    if pinky[0] < 0:
+    if pinky[0] < 4:
         raise RuntimeError(f"pinky does not aim toward the center of the palm: {pinky}")
     # thumb × index should point the same way as the middle finger.
     cross = np.cross(thumb / np.linalg.norm(thumb), index / np.linalg.norm(index))
