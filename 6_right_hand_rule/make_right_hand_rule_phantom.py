@@ -14,7 +14,7 @@ middle finger):
 - middle finger points along +Z
 
 World +X, +Y, +Z are a right-handed triad: thumb × index = middle finger.
-Ring and pinky are flexed toward the palm, as in that drawing.
+Ring and pinky are folded back flat onto the palm.
 """
 
 from __future__ import annotations
@@ -305,11 +305,13 @@ def _aim_toward_center(rel, degrees, blend_length):
     return out
 
 
-def _curl_angle(distance, length, mcp_deg, pip_deg):
-    """Knuckle flexion, then a second bend so the tip comes back toward the palm."""
-    mcp = np.deg2rad(mcp_deg) * _blend(distance, 0.38 * length)
-    pip = np.deg2rad(pip_deg) * _blend(distance - 0.42 * length, 0.30 * length)
-    return mcp + pip
+def _fold_angle(distance, total_deg, arc_mm):
+    """Constant-radius fold: the angle grows linearly over the first `arc_mm`.
+
+    Just under 180° sends the rest of the finger back toward the wrist with a
+    slight climb, which follows the palm as it thickens toward the wrist.
+    """
+    return np.deg2rad(total_deg) * np.clip(distance / arc_mm, 0.0, 1.0)
 
 
 def _pose_digits(local, codes):
@@ -361,29 +363,27 @@ def _pose_digits(local, codes):
     rel = pts - base
     posed[sel] = _sweep_toward_palm(rel, lambda d: (np.pi / 2.0) * _blend(d, 30.0)) + base
 
-    # Ring folds down onto the palm, past the curl already on main.
-    _curl_one(part, posed, RING, 112.0, 98.0, aim_deg=0.0)
-    # Little finger folds with it and yaws further toward the middle of the palm.
-    # More yaw than this runs the shaft through the ring finger.
-    _curl_one(part, posed, PINKY, 112.0, 96.0, aim_deg=-28.0)
+    # Ring and little finger fold all the way back and lie flat on the palm.
+    # The fold radius sets how high they sit; these values leave 0–3 mm of
+    # air above the palm skin. Where the two fingers meet they may overlap.
+    _fold_onto_palm(part, posed, RING, 168.0, 22.0, aim_deg=0.0)
+    # The little finger also turns in toward the middle of the palm.
+    _fold_onto_palm(part, posed, PINKY, 165.0, 18.0, aim_deg=-40.0)
 
     return posed
 
 
-def _curl_one(part, posed, code, mcp_deg, pip_deg, aim_deg):
+def _fold_onto_palm(part, posed, code, total_deg, arc_mm, aim_deg):
     sel, pts = part(code)
     if pts.size == 0:
         return
     base = pts[pts[:, 1] <= np.percentile(pts[:, 1], 8)].mean(axis=0)
     rel = pts - base
     if aim_deg:
-        rel = _aim_toward_center(rel, aim_deg, 34.0)
-    length = max(float(np.percentile(rel[:, 1], 98)), 1.0)
+        rel = _aim_toward_center(rel, aim_deg, 30.0)
     posed[sel] = _sweep_toward_palm(
         rel,
-        lambda d, length=length, mcp_deg=mcp_deg, pip_deg=pip_deg: _curl_angle(
-            d, length, mcp_deg, pip_deg
-        ),
+        lambda d, total_deg=total_deg, arc_mm=arc_mm: _fold_angle(d, total_deg, arc_mm),
     ) + base
 
 
@@ -479,15 +479,15 @@ def _check_pose(report):
         raise RuntimeError(f"thumb is not along +X: {thumb}")
     if not (middle[2] > 40 and abs(middle[0]) < 25 and abs(middle[1]) < 30):
         raise RuntimeError(f"middle finger is not along +Z: {middle}")
-    # Ring and pinky curl back over the palm: the tip is proximal of the
-    # knuckle and still on the palmar side of the hand.
+    # Ring and pinky lie folded back on the palm: the tip is well toward the
+    # wrist from the knuckle and on the palmar side of the hand.
     for name in ("ring", "pinky"):
-        curled = report[name]["direction_mm"]
-        if not (curled[2] > 5 and curled[1] < -14):
-            raise RuntimeError(f"{name} is not curled into the palm: {curled}")
+        folded = report[name]["direction_mm"]
+        if not (folded[2] > 10 and folded[1] < -20):
+            raise RuntimeError(f"{name} is not folded onto the palm: {folded}")
     # The little finger's tip moves toward +X, the middle of the palm.
     pinky = report["pinky"]["direction_mm"]
-    if pinky[0] < 4:
+    if pinky[0] < 10:
         raise RuntimeError(f"pinky does not aim toward the center of the palm: {pinky}")
     # thumb × index should point the same way as the middle finger.
     cross = np.cross(thumb / np.linalg.norm(thumb), index / np.linalg.norm(index))
