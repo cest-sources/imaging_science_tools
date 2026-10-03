@@ -14,7 +14,7 @@ The open hand is resampled to 1 mm and the digits are hinged:
 | +Y | A (anterior) | index finger |
 | +Z | S (superior) | middle finger |
 
-The palm, the index finger, and the thumb lie in the XY plane. +Z points out of the palm, the front of the hand. The middle finger follows +Z. The ring and little finger curl further toward the palm, and the little finger aims in toward the middle of the palm. Thumb × index = middle finger, the same right-handed triad as R × A = S.
+The palm, the index finger, and the thumb lie in the XY plane. +Z points out of the palm, the front of the hand. The middle finger follows +Z. The ring and little finger fold back and lie flat on the palm, and the little finger angles in toward the middle of the palm. Thumb × index = middle finger, the same right-handed triad as R × A = S.
 
 [`right_hand_rule_phantom.nii.gz`](right_hand_rule_phantom.nii.gz) is that posed volume. The notebook rebuilds it and opens it in NiiVue: scroll a slice, drag the 3D panel. The panels stay blank on GitHub until the cells run.
 
