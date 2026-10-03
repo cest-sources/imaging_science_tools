@@ -29,6 +29,12 @@ ST4 - NIfTI, resampling, and registration
 	- folder: 4_Image_visualization_and_registration
 	- colab: https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/cursor/merge-nifti-registration-7d5a/4_Image_visualization_and_registration/nifti_and_registration.ipynb
 
+ST6 - Right-hand rule phantom
+	- warp the Hegdé hand template (NIH 3D 17237) into the right-hand rule pose
+	- thumb +X, index finger +Y, middle finger +Z
+	- folder: 6_right_hand_rule
+	- colab: https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/main/6_right_hand_rule/right_hand_rule_phantom.ipynb
+
 
 
 
