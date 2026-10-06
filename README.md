@@ -17,23 +17,24 @@ ST3 - folders_data_codes: https://youtu.be/I48tuQhZ34A
 	- link to raw data and copy it with code
 	- best practice: git clone, readme, get local or web data, run code
 
-TODO:
+ST4 - NIfTI orientation: the right-hand rule phantom
+	- NIfTI = data array plus affine; RAS+ world, R x A = S like thumb x index = middle finger
+	- a hand in the right-hand rule pose (Hegdé hand template, NIH 3D 17237): thumb +X, index finger +Y, middle finger +Z
+	- neurological versus radiological view: what flips, why both are used, read the R/L letters
+	- folder: 4_nii_orientation
+	- colab: https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/main/4_nii_orientation/right_hand_rule_phantom.ipynb
 
-ST4 - minimal project management
-	- getting things done - inbox, next step!!, two minutes rule
-
-ST4 - NIfTI, resampling, and registration
+ST5 - NIfTI, resampling, and registration
 	- DICOM series to one NIfTI: data array plus voxel-to-world matrix
 	- resample MR_Gd onto a tilted 3-slice slab (2.5 x 2.5 x 7.5 mm, full in-plane field of view), and back
 	- footprint average versus nibabel; register the high-resolution scan onto the low-resolution slab with ANTs and DIPY
-	- folder: 4_Image_visualization_and_registration
-	- colab: https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/cursor/merge-nifti-registration-7d5a/4_Image_visualization_and_registration/nifti_and_registration.ipynb
+	- folder: 5_Image_visualization_and_registration
+	- colab: https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/main/5_Image_visualization_and_registration/nifti_and_registration.ipynb
 
-ST6 - Right-hand rule phantom
-	- warp the Hegdé hand template (NIH 3D 17237) into the right-hand rule pose
-	- thumb +X, index finger +Y, middle finger +Z
-	- folder: 6_right_hand_rule
-	- colab: https://colab.research.google.com/github/cest-sources/imaging_science_tools/blob/main/6_right_hand_rule/right_hand_rule_phantom.ipynb
+TODO:
+
+STx - minimal project management
+	- getting things done - inbox, next step!!, two minutes rule
 
 
 
